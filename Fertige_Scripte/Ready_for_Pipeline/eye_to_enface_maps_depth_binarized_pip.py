@@ -48,6 +48,12 @@ def eye_to_enface_maps_depth_binarized_pip(EV_Volume):
 
     out_depth = np.zeros((768, w), dtype=np.float32)
     out_depth[pad_top: pad_top + src_depth_f.shape[0], :] = src_depth_f
+    
+    edge_cols = 50
+    n_edge = min(edge_cols, w // 2)
+    if n_edge > 0:
+        out_depth[:, :n_edge] = 0
+        out_depth[:, -n_edge:] = 0
     tifffile.imwrite(os.path.join(out_dir, "_depth_map_768x768.tif"), out_depth)
 
     # Boolean map -> 0 or 255, pad similarly
@@ -56,6 +62,9 @@ def eye_to_enface_maps_depth_binarized_pip(EV_Volume):
         src_bool = src_bool[:(768 - pad_top), :]
     out_bool = np.zeros((768, w), dtype=np.uint8)
     out_bool[pad_top: pad_top + src_bool.shape[0], :] = (src_bool.astype(np.uint8) * 255)
+    if n_edge > 0:
+        out_bool[:, :n_edge] = 0
+        out_bool[:, -n_edge:] = 0
     tifffile.imwrite(os.path.join(out_dir, "_boolean_map_768x768.tif"), out_bool)
     print(f"Drusen maps saved to: {out_dir}")
     print(type(out_dir))
